@@ -1,4 +1,4 @@
-from fastapi import FastAPI, File, UploadFile, Form
+from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import HTMLResponse
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.image import load_img, img_to_array
@@ -6,9 +6,11 @@ import numpy as np
 import io
 import h5py
 import json
+import os
+import uvicorn
 
 # ---------------- APP INIT ----------------
-app = FastAPI(title="Grape Disease Detection API")
+app = FastAPI(title="🍇 Grape Disease Detection API")
 
 # ---------------- HELPER FUNCTION TO FIX MODEL ----------------
 def load_h5_model_fixed(path: str):
@@ -94,7 +96,7 @@ async def predict_disease_web(file: UploadFile = File(...)):
     disease = CLASS_NAMES[class_index]
     solution = REMEDIES[disease]
 
-    # Return result as a simple HTML page
+    # Return result as HTML
     return f"""
     <html>
         <head>
@@ -131,3 +133,8 @@ async def predict_disease_api(file: UploadFile = File(...)):
         "confidence": round(confidence * 100, 2),
         "solution": REMEDIES[disease]
     }
+
+# ---------------- RUN SERVER ----------------
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8000))  # Use Render port or default 8000
+    uvicorn.run("app:app", host="0.0.0.0", port=port)
